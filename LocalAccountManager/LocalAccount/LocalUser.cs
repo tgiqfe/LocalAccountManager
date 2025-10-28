@@ -200,6 +200,11 @@ namespace LocalAccountManager.LocalAccount
 
         #endregion
 
+        /// <summary>
+        /// Get local user parameter.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static LocalUser GetParam(string name)
         {
             Logger.WriteLine("Info", $"Getting parameter of {_log_target}. name: {name}");
@@ -209,6 +214,10 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Set local user parameter. need ModifyParam object.
+        /// </summary>
+        /// <param name="param"></param>
         public void SetParam(ModifyParam param)
         {
             Logger.WriteLine("Info", $"Setting parameter of {_log_target}. name: {this.Name}");
@@ -335,6 +344,10 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Rename local user name.
+        /// </summary>
+        /// <param name="newName"></param>
         public void Rename(string newName)
         {
             Logger.WriteLine("Info", $"Renaming {_log_target}. old name: {this.Name}, new name: {newName}");
@@ -364,6 +377,10 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Create new local user.
+        /// </summary>
+        /// <param name="name"></param>
         public static void New(string name)
         {
             Logger.WriteLine("Info", $"Creating new {_log_target}. name: {name}");
@@ -385,11 +402,18 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Create new local user. (alias of New method)
+        /// </summary>
+        /// <param name="name"></param>
         public static void Add(string name)
         {
             LocalUser.Add(name);
         }
 
+        /// <summary>
+        /// Remove local user.
+        /// </summary>
         public void Remove()
         {
             Logger.WriteLine("Info", $"Deleting {_log_target}. name: {this.Name}");
@@ -415,11 +439,18 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Remove local user. (alias of Remove method)
+        /// </summary>
         public void Delete()
         {
             this.Remove();
         }
 
+        /// <summary>
+        /// Change local user password.
+        /// </summary>
+        /// <param name="newPassword"></param>
         public void ChangePassword(string newPassword)
         {
             Logger.WriteLine("Info", $"Changing password of {_log_target}. name: {this.Name}");
@@ -445,6 +476,9 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Unlock local user account.
+        /// </summary>
         public void UnlockAccount()
         {
             Logger.WriteLine("Info", $"Unlocking account of {_log_target}. name: {this.Name}");
@@ -475,6 +509,10 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Join local user to local group.
+        /// </summary>
+        /// <param name="groupName"></param>
         public void JoinGroup(string groupName)
         {
             Logger.WriteLine("Info", $"Joining {_log_target} to group. user: {this.Name}, group: {groupName}");
@@ -511,6 +549,10 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Leave local user from local group.
+        /// </summary>
+        /// <param name="groupName"></param>
         public void LeaveGroup(string groupName)
         {
             Logger.WriteLine("Info", $"Leaving {_log_target} from group. user: {this.Name}, group: {groupName}");

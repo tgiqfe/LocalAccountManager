@@ -177,6 +177,11 @@ namespace LocalAccountManager.LocalAccount
 
         #endregion
 
+        /// <summary>
+        /// Get local group parameter.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static LocalGroup GetParam(string name)
         {
             Logger.WriteLine("Info", $"Getting parameter of {_log_target}. name: {name}");
@@ -186,6 +191,10 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Set local group parameter. need ModifyParam object.
+        /// </summary>
+        /// <param name="param"></param>
         public void SetParam(ModifyParam param)
         {
             Logger.WriteLine("Info", $"Setting parameter of {_log_target}. name: {this.Name}");
@@ -232,6 +241,10 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Rename local group name.
+        /// </summary>
+        /// <param name="newName"></param>
         public void Rename(string newName)
         {
             Logger.WriteLine("Info", $"Renaming {_log_target}. old name: {this.Name}, new name: {newName}");
@@ -261,6 +274,10 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Create new local group.
+        /// </summary>
+        /// <param name="name"></param>
         public static void New(string name)
         {
             Logger.WriteLine("Info", $"Creating new {_log_target}. name: {name}");
@@ -282,11 +299,18 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Create new local group. (alias of New)
+        /// </summary>
+        /// <param name="name"></param>
         public static void Add(string name)
         {
             LocalGroup.New(name);
         }
 
+        /// <summary>
+        /// Remove local group.
+        /// </summary>
         public void Remove()
         {
             Logger.WriteLine("Info", $"Deleting {_log_target}. name: {this.Name}");
@@ -312,6 +336,9 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
+        /// <summary>
+        /// Remove local group. (alias of Remove)
+        /// </summary>
         public void Delete()
         {
             this.Remove();
