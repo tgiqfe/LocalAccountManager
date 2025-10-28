@@ -1,4 +1,4 @@
-﻿namespace Test424.LocalAccount
+﻿namespace LocalAccountManager.LocalAccount
 {
     internal class ModifyParam
     {

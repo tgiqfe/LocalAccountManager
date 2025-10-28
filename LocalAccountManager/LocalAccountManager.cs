@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using Test424.LocalAccount;
+﻿using LocalAccountManager.LocalAccount;
+using System.Text.Json;
 
-namespace LocalAccountSetter
+namespace LocalAccountManager
 {
     internal class LocalAccountManager
     {
@@ -47,24 +47,24 @@ namespace LocalAccountSetter
         public static void SetUser(string userName, ModifyParam modifyParam)
         {
             var user = new LocalUser(userName);
-            user.SetUser(modifyParam);
+            user.SetParam(modifyParam);
         }
 
         public static void AddUser(string userName)
         {
-            LocalUser.AddUser(userName);
+            LocalUser.Add(userName);
         }
 
         public static void RemoveUser(string userName)
         {
             var user = new LocalUser(userName);
-            user.RemoveUser();
+            user.Remove();
         }
 
         public static void RenameUser(string userName, string newName)
         {
             var user = new LocalUser(userName);
-            user.RenameUser(newName);
+            user.Rename(newName);
         }
 
         public static void ChangePassword(string userName, string password)

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using LocalAccountManager.LocalAccount;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Test424.LocalAccount;
 
-namespace LocalAccountSetter
+namespace LocalAccountManager
 {
     public enum SubOption
     {

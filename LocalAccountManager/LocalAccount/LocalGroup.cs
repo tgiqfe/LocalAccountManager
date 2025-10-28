@@ -2,7 +2,7 @@
 using System.DirectoryServices.AccountManagement;
 using System.Management;
 
-namespace Test424.LocalAccount
+namespace LocalAccountManager.LocalAccount
 {
     internal class LocalGroup
     {
@@ -18,6 +18,7 @@ namespace Test424.LocalAccount
         #region private parameter
 
         private bool _isDeleted = false;
+        const string _log_target = "local group";
 
         #endregion
 
@@ -124,7 +125,7 @@ namespace Test424.LocalAccount
         /// <returns></returns>
         public static bool Exists(string name, DirectoryEntry directoryEntry = null)
         {
-
+            Logger.WriteLine("Info", $"Checking existence of {_log_target}. name: {name}");
             if (directoryEntry == null)
             {
                 using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_Group WHERE LocalAccount=True"))
@@ -151,6 +152,7 @@ namespace Test424.LocalAccount
         /// <returns></returns>
         public static bool HasMember(string userName, string groupName)
         {
+            Logger.WriteLine("Info", $"Checking membership of {_log_target}. group: {groupName}, user: {userName}");
             using (var context = new PrincipalContext(ContextType.Machine, Environment.MachineName))
             using (var group = GroupPrincipal.FindByIdentity(context, groupName))
             {
@@ -168,86 +170,151 @@ namespace Test424.LocalAccount
         /// <returns></returns>
         public bool HasMember(string userName)
         {
+            Logger.WriteLine("Info", $"Checking membership of {_log_target}. group: {this.Name}, user: {userName}");
             return this.Members.
                 Any(m => string.Equals(m, userName, StringComparison.OrdinalIgnoreCase));
         }
 
         #endregion
 
-        public static LocalGroup GetGroup(string name)
+        public static LocalGroup GetParam(string name)
         {
+            Logger.WriteLine("Info", $"Getting parameter of {_log_target}. name: {name}");
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             {
                 return LocalGroup.Exists(name, directoryEntry) ? new LocalGroup(name) : null;
             }
         }
 
-        public void SetGroup(ModifyParam param)
+        public void SetParam(ModifyParam param)
         {
-            if (_isDeleted) return;
+            Logger.WriteLine("Info", $"Setting parameter of {_log_target}. name: {this.Name}");
+            if (_isDeleted)
+            {
+                Logger.WriteLine("Warning", $"Cannot set parameter of already deleted {_log_target}.");
+                return;
+            }
 
             string name = this.Name;
             using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_Group WHERE LocalAccount=True"))
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             using (var context = new PrincipalContext(ContextType.Machine, Environment.MachineName))
             {
-                using (var wmi = searcher.Get().
-                    OfType<ManagementObject>().
-                    FirstOrDefault(g => string.Equals(g["Name"]?.ToString(), name, StringComparison.OrdinalIgnoreCase)))
-                using (var entry = directoryEntry.Children.
-                    OfType<DirectoryEntry>().
-                    FirstOrDefault(e => e.SchemaClassName == "Group" && e.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
-                using (var principal = GroupPrincipal.FindByIdentity(context, name))
+                try
                 {
-                    bool isChangeEntry = false;
-                    bool isChangePrincipal = false;
-                    if (param.Description != null && param.Description != this.Description)
+                    using (var wmi = searcher.Get().
+                        OfType<ManagementObject>().
+                        FirstOrDefault(g => string.Equals(g["Name"]?.ToString(), name, StringComparison.OrdinalIgnoreCase)))
+                    using (var entry = directoryEntry.Children.
+                        OfType<DirectoryEntry>().
+                        FirstOrDefault(e => e.SchemaClassName == "Group" && e.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    using (var principal = GroupPrincipal.FindByIdentity(context, name))
                     {
-                        entry.Properties["Description"].Value = param.Description;
-                        this.Description = param.Description;
-                        isChangeEntry = true;
+                        bool isChangeEntry = false;
+                        bool isChangePrincipal = false;
+                        if (param.Description != null && param.Description != this.Description)
+                        {
+                            Logger.WriteLine("Info", $"Changing Description to '{param.Description}'.");
+                            entry.Properties["Description"].Value = param.Description;
+                            this.Description = param.Description;
+                            isChangeEntry = true;
+                        }
+                        if (isChangeEntry) entry.CommitChanges();
+                        if (isChangePrincipal) principal.Save();
+                        Logger.WriteLine("Info", $"Successfully set parameter of {_log_target}.");
                     }
-                    if (isChangeEntry) entry.CommitChanges();
-                    if (isChangePrincipal) principal.Save();
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}. Exception: {e.ToString()}");
+                    Logger.WriteRaw(e.Message);
                 }
             }
         }
 
-        public void RenameGroup(string newName)
+        public void Rename(string newName)
         {
-            if (_isDeleted) return;
+            Logger.WriteLine("Info", $"Renaming {_log_target}. old name: {this.Name}, new name: {newName}");
+            if (_isDeleted)
+            {
+                Logger.WriteLine("Warning", $"Cannot rename already deleted {_log_target}.");
+                return;
+            }
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             using (var entry = directoryEntry.Children.Find(this.Name, "Group"))
             {
-                if (entry != null)
+                try
                 {
-                    entry.Rename(newName);
-                    entry.CommitChanges();
-                    this.Name = newName;
+                    if (entry != null)
+                    {
+                        entry.Rename(newName);
+                        entry.CommitChanges();
+                        this.Name = newName;
+                        Logger.WriteLine("Info", $"Successfully renamed {_log_target}.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteLine("Error", $"Failed to rename {_log_target}. Exception: {e.ToString()}");
+                    Logger.WriteRaw(e.Message);
                 }
             }
         }
 
-        public static void AddGroup(string name)
+        public static void New(string name)
         {
+            Logger.WriteLine("Info", $"Creating new {_log_target}. name: {name}");
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             {
-                if (!LocalGroup.Exists(name, directoryEntry))
+                try
                 {
-                    directoryEntry.Children.Add(name, "Group").CommitChanges();
+                    if (!LocalGroup.Exists(name, directoryEntry))
+                    {
+                        directoryEntry.Children.Add(name, "Group").CommitChanges();
+                        Logger.WriteLine("Info", $"Successfully created new {_log_target}.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteLine("Error", $"Failed to create new {_log_target}. Exception: {e.ToString()}");
+                    Logger.WriteRaw(e.Message);
                 }
             }
         }
 
-        public void RemoveGroup()
+        public static void Add(string name)
         {
-            if (_isDeleted) return;
+            LocalGroup.New(name);
+        }
+
+        public void Remove()
+        {
+            Logger.WriteLine("Info", $"Deleting {_log_target}. name: {this.Name}");
+            if (_isDeleted)
+            {
+                Logger.WriteLine("Warning", $"Cannot delete already deleted {_log_target}.");
+                return;
+            }
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             {
-                var entry = directoryEntry.Children.Find(this.Name, "Group");
-                directoryEntry.Children.Remove(entry);
-                _isDeleted = true;
+                try
+                {
+                    var entry = directoryEntry.Children.Find(this.Name, "Group");
+                    directoryEntry.Children.Remove(entry);
+                    _isDeleted = true;
+                    Logger.WriteLine("Info", $"Successfully deleted {_log_target}.");
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteLine("Error", $"Failed to delete {_log_target}. Exception: {e.ToString()}");
+                    Logger.WriteRaw(e.Message);
+                }
             }
+        }
+
+        public void Delete()
+        {
+            this.Remove();
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace LocalAccountSetter.LocalAccount
+namespace LocalAccountManager.LocalAccount
 {
     internal class LogonChecker
     {
