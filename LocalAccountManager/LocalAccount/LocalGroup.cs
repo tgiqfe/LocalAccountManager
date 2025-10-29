@@ -1,7 +1,6 @@
 ﻿using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.Management;
-using System.Runtime.InteropServices;
 
 namespace LocalAccountManager.LocalAccount
 {
@@ -231,60 +230,6 @@ namespace LocalAccountManager.LocalAccount
             }
             return false;
         }
-
-        /*
-        /// <summary>
-        /// Set local group parameter. need ModifyParam object.
-        /// </summary>
-        /// <param name="param"></param>
-        public bool SetParam(ModifyParam param)
-        {
-            Logger.WriteLine("Info", $"Setting parameter of {_log_target}. name: {this.Name}");
-            if (_isDeleted)
-            {
-                Logger.WriteLine("Warning", $"Cannot set parameter of already deleted {_log_target}.");
-                return false;
-            }
-
-            string name = this.Name;
-            using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_Group WHERE LocalAccount=True"))
-            using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
-            using (var context = new PrincipalContext(ContextType.Machine, Environment.MachineName))
-            {
-                try
-                {
-                    using (var wmi = searcher.Get().
-                        OfType<ManagementObject>().
-                        FirstOrDefault(g => string.Equals(g["Name"]?.ToString(), name, StringComparison.OrdinalIgnoreCase)))
-                    using (var entry = directoryEntry.Children.
-                        OfType<DirectoryEntry>().
-                        FirstOrDefault(e => e.SchemaClassName == "Group" && e.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
-                    using (var principal = GroupPrincipal.FindByIdentity(context, name))
-                    {
-                        bool isChangeEntry = false;
-                        bool isChangePrincipal = false;
-                        if (param.Description != null && param.Description != this.Description)
-                        {
-                            Logger.WriteLine("Info", $"Changing Description to '{param.Description}'.");
-                            entry.Properties["Description"].Value = param.Description;
-                            this.Description = param.Description;
-                            isChangeEntry = true;
-                        }
-                        if (isChangeEntry) entry.CommitChanges();
-                        if (isChangePrincipal) principal.Save();
-                        Logger.WriteLine("Info", $"Successfully set parameter of {_log_target}.");
-                        return true;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
-                }
-            }
-            return false;
-        }
-        */
 
         /// <summary>
         /// Rename local group name.
