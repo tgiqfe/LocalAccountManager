@@ -487,6 +487,12 @@ namespace LocalAccountManager.LocalAccount
                 Logger.WriteLine("Warning", $"Cannot change password already deleted {_log_target}.");
                 return false;
             }
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                Logger.WriteLine("Warning", $"Cannot set empty password to {_log_target}.");
+                return false;
+            }
+
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             using (var entry = directoryEntry.Children.Find(this.Name, "User"))
             {
