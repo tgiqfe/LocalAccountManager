@@ -49,14 +49,14 @@ namespace LocalAccountManager.LocalAccount
                 using (var entry = directoryEntry.Children.Find(name, "User"))
                 using (var principal = UserPrincipal.FindByIdentity(context, name))
                 {
-                    SetParameter(wmi, entry, principal);
+                    Initialize(wmi, entry, principal);
                 }
             }
         }
 
         public LocalUser(ManagementObject wmi, DirectoryEntry entry, UserPrincipal principal)
         {
-            SetParameter(wmi, entry, principal);
+            Initialize(wmi, entry, principal);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace LocalAccountManager.LocalAccount
         /// <param name="wmi"></param>
         /// <param name="entry"></param>
         /// <param name="principal"></param>
-        private void SetParameter(ManagementObject wmi, DirectoryEntry entry, UserPrincipal principal)
+        private void Initialize(ManagementObject wmi, DirectoryEntry entry, UserPrincipal principal)
         {
             if (wmi == null || entry == null || principal == null) return;
 
@@ -104,7 +104,7 @@ namespace LocalAccountManager.LocalAccount
                 using (var entry = directoryEntry.Children.Find(name, "User"))
                 using (var principal = UserPrincipal.FindByIdentity(context, name))
                 {
-                    SetParameter(wmi, entry, principal);
+                    Initialize(wmi, entry, principal);
                 }
             }
         }
