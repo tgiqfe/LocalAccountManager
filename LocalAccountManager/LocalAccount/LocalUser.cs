@@ -246,6 +246,15 @@ namespace LocalAccountManager.LocalAccount
                 Logger.WriteLine("Warning", $"Cannot set parameter of already deleted {_log_target}.");
                 return false;
             }
+            if (string.IsNullOrEmpty(fullName) && string.IsNullOrEmpty(description) &&
+               userMustChangePasswordAtNextLogon == null && userCannotChangePassword == null &&
+               passwordNeverExpires == null && accountIsDisabled == null &&
+               string.IsNullOrEmpty(profilePath) && string.IsNullOrEmpty(logonScript) &&
+               string.IsNullOrEmpty(homeDirectory) && string.IsNullOrEmpty(homeDrive))
+            {
+                Logger.WriteLine("Warning", $"Skip set parameter for {_log_target}.");
+                return false;
+            }
 
             bool isMemberOfAdministrators = this.IsMemberOf("Administrators");
             if (isMemberOfAdministrators)
@@ -483,15 +492,15 @@ namespace LocalAccountManager.LocalAccount
         {
             if (string.IsNullOrEmpty(newPassword))
             {
-                Logger.WriteLine("Warning", $"Cannot set empty password to {_log_target}.");
+                Logger.WriteLine("Warning", $"Skip change password to {_log_target}.");
                 return false;
             }
-            Logger.WriteLine("Info", $"Changing password of {_log_target}. name: {this.Name}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot change password already deleted {_log_target}.");
                 return false;
             }
+            Logger.WriteLine("Info", $"Changing password of {_log_target}. name: {this.Name}");
 
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             using (var entry = directoryEntry.Children.Find(this.Name, "User"))
@@ -515,14 +524,20 @@ namespace LocalAccountManager.LocalAccount
         /// <summary>
         /// Unlock local user account.
         /// </summary>
-        public bool UnlockAccount()
+        public bool UnlockAccount(bool? unlock)
         {
-            Logger.WriteLine("Info", $"Unlocking account of {_log_target}. name: {this.Name}");
+            if (unlock == null)
+            {
+                Logger.WriteLine("Warning", $"Skip unlock account to {_log_target}.");
+                return false;
+            }
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot unlock account of already deleted {_log_target}.");
                 return false;
             }
+            Logger.WriteLine("Info", $"Unlocking account of {_log_target}. name: {this.Name}");
+
             string name = this.Name;
             using (var context = new PrincipalContext(ContextType.Machine, Environment.MachineName))
             using (var principal = UserPrincipal.FindByIdentity(context, name))

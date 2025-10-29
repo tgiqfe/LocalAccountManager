@@ -199,6 +199,11 @@ namespace LocalAccountManager.LocalAccount
                 Logger.WriteLine("Warning", $"Cannot set parameter of already deleted {_log_target}.");
                 return false;
             }
+            if (string.IsNullOrEmpty(description))
+            {
+                Logger.WriteLine("Warning", $"Skip set parameter for {_log_target}.");
+                return false;
+            }
 
             string name = this.Name;
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
