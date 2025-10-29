@@ -14,7 +14,10 @@ switch (ap.SubOption)
         LocalAccountManager.LocalAccountManager.GetUser(ap.UserName);
         break;
     case SubOption.Set:
-        LocalAccountManager.LocalAccountManager.SetUser(ap.UserName, ap.ModifyParam);
+        LocalAccountManager.LocalAccountManager.SetUser(ap.UserName,
+            ap.FullName, ap.Description, ap.UserMustChangePasswordAtNextLogon,
+            ap.UserCannotChangePassword, ap.PasswordNeverExpires, ap.AccountIsDisabled,
+            ap.ProfilePath, ap.LogonScript, ap.HomeDirectory, ap.HomeDrive);
         break;
     case SubOption.Add:
         LocalAccountManager.LocalAccountManager.AddUser(ap.UserName);

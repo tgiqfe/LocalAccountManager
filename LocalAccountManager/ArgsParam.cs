@@ -29,7 +29,16 @@ namespace LocalAccountManager
         public string GroupName { get; set; }
         public string NewName { get; set; }
         public string Password { get; set; }
-        public ModifyParam ModifyParam { get; set; }
+        public string FullName { get; set; }
+        public string Description { get; set; }
+        public bool? UserMustChangePasswordAtNextLogon { get; set; }
+        public bool? UserCannotChangePassword { get; set; }
+        public bool? PasswordNeverExpires { get; set; }
+        public bool? AccountIsDisabled { get; set; }
+        public string ProfilePath { get; set; }
+        public string LogonScript { get; set; }
+        public string HomeDirectory { get; set; }
+        public string HomeDrive { get; set; }
 
         private readonly string[] _enable_words = new string[]
             { "true", "false", "1", "yes", "on", "enable", "en" };
@@ -83,24 +92,21 @@ namespace LocalAccountManager
                         case "--fullname":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.FullName = args[++i];
+                                this.FullName = args[++i];
                             }
                             break;
                         case "/desc":
                         case "--description":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.Description = args[++i];
+                                this.Description = args[++i];
                             }
                             break;
                         case "/must":
                         case "--mustchangepassword":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.UserMustChangePasswordAtNextLogon =
+                                this.UserMustChangePasswordAtNextLogon =
                                     _enable_words.Any(x => x.Equals(args[++i], StringComparison.OrdinalIgnoreCase));
                             }
                             break;
@@ -108,8 +114,7 @@ namespace LocalAccountManager
                         case "--cantchangepassword":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.UserCannotChangePassword =
+                                this.UserCannotChangePassword =
                                     _enable_words.Any(x => x.Equals(args[++i], StringComparison.OrdinalIgnoreCase));
                             }
                             break;
@@ -117,8 +122,7 @@ namespace LocalAccountManager
                         case "--neverexpirepassword":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.PasswordNeverExpires =
+                                this.PasswordNeverExpires =
                                     _enable_words.Any(x => x.Equals(args[++i], StringComparison.OrdinalIgnoreCase));
                             }
                             break;
@@ -126,8 +130,7 @@ namespace LocalAccountManager
                         case "--disableaccount":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.AccountIsDisabled =
+                                this.AccountIsDisabled =
                                     _enable_words.Any(x => x.Equals(args[++i], StringComparison.OrdinalIgnoreCase));
                             }
                             break;
@@ -135,32 +138,28 @@ namespace LocalAccountManager
                         case "--profilepath":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.ProfilePath = args[++i];
+                                this.ProfilePath = args[++i];
                             }
                             break;
                         case "/script":
                         case "--logonscript":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.LogonScript = args[++i];
+                                this.LogonScript = args[++i];
                             }
                             break;
                         case "/hdir":
                         case "--homedirectory":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.HomeDirectory = args[++i];
+                                this.HomeDirectory = args[++i];
                             }
                             break;
                         case "/hdrive":
                         case "--homedrive":
                             if (i + 1 < args.Length)
                             {
-                                this.ModifyParam ??= new ModifyParam();
-                                this.ModifyParam.HomeDrive = args[++i];
+                                this.HomeDrive = args[++i];
                             }
                             break;
                     }

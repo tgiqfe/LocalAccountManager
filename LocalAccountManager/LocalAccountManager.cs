@@ -44,10 +44,30 @@ namespace LocalAccountManager
             }
         }
 
-        public static void SetUser(string userName, ModifyParam modifyParam)
+        public static void SetUser(string userName,
+            string fullName,
+            string description,
+            bool? userMustChangePasswordAtNextLogon,
+            bool? userCannotChangePassword,
+            bool? passwordNeverExpires,
+            bool? accountIsDisabled,
+            string profilePath,
+            string logonScript,
+            string homeDirectory,
+            string homeDrive)
         {
             var user = new LocalUser(userName);
-            user.SetParam(modifyParam);
+            user.SetParam(
+                fullName,
+                description,
+                userMustChangePasswordAtNextLogon,
+                userCannotChangePassword,
+                passwordNeverExpires,
+                accountIsDisabled,
+                profilePath,
+                logonScript,
+                homeDirectory,
+                homeDrive);
         }
 
         public static void AddUser(string userName)

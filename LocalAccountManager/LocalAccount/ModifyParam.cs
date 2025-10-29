@@ -1,5 +1,6 @@
 ﻿namespace LocalAccountManager.LocalAccount
 {
+    /*
     internal class ModifyParam
     {
         public string FullName { get; set; }
@@ -13,4 +14,5 @@
         public string HomeDirectory { get; set; }
         public string HomeDrive { get; set; }
     }
+    */
 }

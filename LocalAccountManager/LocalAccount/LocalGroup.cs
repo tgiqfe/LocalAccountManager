@@ -1,6 +1,7 @@
 ﻿using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.Management;
+using System.Runtime.InteropServices;
 
 namespace LocalAccountManager.LocalAccount
 {
@@ -191,17 +192,58 @@ namespace LocalAccountManager.LocalAccount
             }
         }
 
-        /// <summary>
-        /// Set local group parameter. need ModifyParam object.
-        /// </summary>
-        /// <param name="param"></param>
-        public void SetParam(ModifyParam param)
+        public bool SetParam(string description)
         {
             Logger.WriteLine("Info", $"Setting parameter of {_log_target}. name: {this.Name}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot set parameter of already deleted {_log_target}.");
-                return;
+                return false;
+            }
+
+            string name = this.Name;
+            using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
+            {
+                try
+                {
+                    using (var entry = directoryEntry.Children.
+                        OfType<DirectoryEntry>().
+                        FirstOrDefault(e => e.SchemaClassName == "Group" && e.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        bool isChangeEntry = false;
+                        if (description != null && description != this.Description)
+                        {
+                            Logger.WriteLine("Info", $"Changing Description to '{description}'.");
+                            entry.Properties["Description"].Value = description;
+                            this.Description = description;
+                            isChangeEntry = true;
+                        }
+                        if (isChangeEntry) entry.CommitChanges();
+                        Logger.WriteLine("Info", $"Successfully set parameter of {_log_target}.");
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}. Exception: {e.ToString()}");
+                    Logger.WriteRaw(e.Message);
+                }
+            }
+            return false;
+        }
+
+        /*
+        /// <summary>
+        /// Set local group parameter. need ModifyParam object.
+        /// </summary>
+        /// <param name="param"></param>
+        public bool SetParam(ModifyParam param)
+        {
+            Logger.WriteLine("Info", $"Setting parameter of {_log_target}. name: {this.Name}");
+            if (_isDeleted)
+            {
+                Logger.WriteLine("Warning", $"Cannot set parameter of already deleted {_log_target}.");
+                return false;
             }
 
             string name = this.Name;
@@ -231,6 +273,7 @@ namespace LocalAccountManager.LocalAccount
                         if (isChangeEntry) entry.CommitChanges();
                         if (isChangePrincipal) principal.Save();
                         Logger.WriteLine("Info", $"Successfully set parameter of {_log_target}.");
+                        return true;
                     }
                 }
                 catch (Exception e)
@@ -239,19 +282,21 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
+        */
 
         /// <summary>
         /// Rename local group name.
         /// </summary>
         /// <param name="newName"></param>
-        public void Rename(string newName)
+        public bool Rename(string newName)
         {
             Logger.WriteLine("Info", $"Renaming {_log_target}. old name: {this.Name}, new name: {newName}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot rename already deleted {_log_target}.");
-                return;
+                return false;
             }
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             using (var entry = directoryEntry.Children.Find(this.Name, "Group"))
@@ -264,6 +309,7 @@ namespace LocalAccountManager.LocalAccount
                         entry.CommitChanges();
                         this.Name = newName;
                         Logger.WriteLine("Info", $"Successfully renamed {_log_target}.");
+                        return true;
                     }
                 }
                 catch (Exception e)
@@ -272,13 +318,14 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Create new local group.
         /// </summary>
         /// <param name="name"></param>
-        public static void New(string name)
+        public static bool New(string name)
         {
             Logger.WriteLine("Info", $"Creating new {_log_target}. name: {name}");
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
@@ -289,6 +336,7 @@ namespace LocalAccountManager.LocalAccount
                     {
                         directoryEntry.Children.Add(name, "Group").CommitChanges();
                         Logger.WriteLine("Info", $"Successfully created new {_log_target}.");
+                        return true;
                     }
                 }
                 catch (Exception e)
@@ -297,27 +345,28 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Create new local group. (alias of New)
         /// </summary>
         /// <param name="name"></param>
-        public static void Add(string name)
+        public static bool Add(string name)
         {
-            LocalGroup.New(name);
+            return LocalGroup.New(name);
         }
 
         /// <summary>
         /// Remove local group.
         /// </summary>
-        public void Remove()
+        public bool Remove()
         {
             Logger.WriteLine("Info", $"Deleting {_log_target}. name: {this.Name}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot delete already deleted {_log_target}.");
-                return;
+                return false;
             }
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             {
@@ -327,6 +376,7 @@ namespace LocalAccountManager.LocalAccount
                     directoryEntry.Children.Remove(entry);
                     _isDeleted = true;
                     Logger.WriteLine("Info", $"Successfully deleted {_log_target}.");
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -334,14 +384,15 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Remove local group. (alias of Remove)
         /// </summary>
-        public void Delete()
+        public bool Delete()
         {
-            this.Remove();
+            return this.Remove();
         }
     }
 }

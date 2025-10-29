@@ -217,14 +217,167 @@ namespace LocalAccountManager.LocalAccount
         /// <summary>
         /// Set local user parameter. need ModifyParam object.
         /// </summary>
-        /// <param name="param"></param>
-        public void SetParam(ModifyParam param)
+        /// <param name="fullName"></param>
+        /// <param name="description"></param>
+        /// <param name="userMustChangePasswordAtNextLogon"></param>
+        /// <param name="userCannotChangePassword"></param>
+        /// <param name="passwordNeverExpires"></param>
+        /// <param name="accountIsDisabled"></param>
+        /// <param name="profilePath"></param>
+        /// <param name="logonScript"></param>
+        /// <param name="homeDirectory"></param>
+        /// <param name="homeDrive"></param>
+        /// <returns></returns>
+        public bool SetParam(
+            string fullName,
+            string description,
+            bool? userMustChangePasswordAtNextLogon,
+            bool? userCannotChangePassword,
+            bool? passwordNeverExpires,
+            bool? accountIsDisabled,
+            string profilePath,
+            string logonScript,
+            string homeDirectory,
+            string homeDrive)
         {
             Logger.WriteLine("Info", $"Setting parameter of {_log_target}. name: {this.Name}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot set parameter of already deleted {_log_target}.");
-                return;
+                return false;
+            }
+
+            bool isMemberOfAdministrators = this.IsMemberOf("Administrators");
+            if (isMemberOfAdministrators)
+            {
+                Logger.WriteLine("Info", $"{_log_target} is member of Administrators group. Temporarily leaving the group to modify parameters.");
+                LeaveGroup("Administrators");
+            }
+
+            string name = this.Name;
+            using (var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_UserAccount WHERE LocalAccount=True"))
+            using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
+            using (var context = new PrincipalContext(ContextType.Machine, Environment.MachineName))
+            {
+                try
+                {
+                    using (var wmi = searcher.Get().
+                        OfType<ManagementObject>().
+                        FirstOrDefault(u => string.Equals(u["Name"]?.ToString(), name, StringComparison.OrdinalIgnoreCase)))
+                    using (var entry = directoryEntry.Children.
+                        OfType<DirectoryEntry>().
+                        FirstOrDefault(e => e.SchemaClassName == "User" && e.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
+                    using (var principal = UserPrincipal.FindByIdentity(context, name))
+                    {
+                        bool isChangeEntry = false;
+                        bool isChangePrincipal = false;
+                        if (fullName != null && fullName != this.FullName)
+                        {
+                            Logger.WriteLine("Info", $"Changing FullName to '{fullName}'.");
+                            entry.Properties["FullName"].Value = fullName;
+                            this.FullName = fullName;
+                            isChangeEntry = true;
+                        }
+                        if (description != null && description != this.Description)
+                        {
+                            Logger.WriteLine("Info", $"Changing Description to '{description}'.");
+                            entry.Properties["Description"].Value = description;
+                            this.Description = description;
+                            isChangeEntry = true;
+                        }
+                        if (userMustChangePasswordAtNextLogon.HasValue &&
+                            userMustChangePasswordAtNextLogon.Value != this.UserMustChangePasswordAtNextLogon)
+                        {
+                            Logger.WriteLine("Info", $"Changing UserMustChangePasswordAtNextLogon to '{userMustChangePasswordAtNextLogon.Value}'.");
+                            entry.Properties["PasswordExpired"].Value = userMustChangePasswordAtNextLogon.Value ? "1" : "0";
+                            this.UserMustChangePasswordAtNextLogon = userMustChangePasswordAtNextLogon.Value;
+                            isChangeEntry = true;
+                        }
+                        if (userCannotChangePassword.HasValue &&
+                            userCannotChangePassword.Value != this.UserCannotChangePassword)
+                        {
+                            Logger.WriteLine("Info", $"Changing UserCannotChangePassword to '{userCannotChangePassword.Value}'.");
+                            principal.UserCannotChangePassword = userCannotChangePassword.Value;
+                            this.UserCannotChangePassword = userCannotChangePassword.Value;
+                            isChangePrincipal = true;
+                        }
+                        if (passwordNeverExpires.HasValue &&
+                            passwordNeverExpires.Value != this.PasswordNeverExpires)
+                        {
+                            Logger.WriteLine("Info", $"Changing PasswordNeverExpires to '{passwordNeverExpires.Value}'.");
+                            principal.PasswordNeverExpires = passwordNeverExpires.Value;
+                            this.PasswordNeverExpires = passwordNeverExpires.Value;
+                            isChangePrincipal = true;
+                        }
+                        if (accountIsDisabled.HasValue &&
+                            accountIsDisabled.Value != this.AccountIsDisabled)
+                        {
+                            Logger.WriteLine("Info", $"Changing AccountIsDisabled to '{accountIsDisabled.Value}'.");
+                            principal.Enabled = !accountIsDisabled.Value;
+                            this.AccountIsDisabled = accountIsDisabled.Value;
+                            isChangePrincipal = true;
+                        }
+                        if (profilePath != null && profilePath != this.ProfilePath)
+                        {
+                            Logger.WriteLine("Info", $"Changing ProfilePath to '{profilePath}'.");
+                            entry.Properties["Profile"].Value = profilePath;
+                            this.ProfilePath = profilePath;
+                            isChangeEntry = true;
+                        }
+                        if (logonScript != null && logonScript != this.LogonScript)
+                        {
+                            Logger.WriteLine("Info", $"Changing LogonScript to '{logonScript}'.");
+                            entry.Properties["LoginScript"].Value = logonScript;
+                            this.LogonScript = logonScript;
+                            isChangeEntry = true;
+                        }
+                        if (homeDirectory != null && homeDirectory != this.HomeDirectory)
+                        {
+                            Logger.WriteLine("Info", $"Changing HomeDirectory to '{homeDirectory}'.");
+                            entry.Properties["HomeDirectory"].Value = homeDirectory;
+                            this.HomeDirectory = homeDirectory;
+                            isChangeEntry = true;
+                        }
+                        if (homeDrive != null && homeDrive != this.HomeDrive)
+                        {
+                            Logger.WriteLine("Info", $"Changing HomeDrive to '{homeDrive}'.");
+                            entry.Properties["HomeDirDrive"].Value = homeDrive;
+                            this.HomeDrive = homeDrive;
+                            isChangeEntry = true;
+                        }
+                        if (isChangeEntry) entry.CommitChanges();
+                        if (isChangePrincipal) principal.Save();
+                        Logger.WriteLine("Info", $"Successfully set parameter of {_log_target}.");
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}. Exception: {e.ToString()}");
+                    Logger.WriteRaw(e.Message);
+                }
+
+                if (isMemberOfAdministrators)
+                {
+                    Logger.WriteLine("Info", $"{_log_target} was member of Administrators group. Re-joining the group after modifying parameters.");
+                    JoinGroup("Administrators");
+                }
+                return false;
+            }
+        }
+
+        /*
+        /// <summary>
+        /// Set local user parameter. need ModifyParam object.
+        /// </summary>
+        /// <param name="param"></param>
+        public bool SetParam(ModifyParam param)
+        {
+            Logger.WriteLine("Info", $"Setting parameter of {_log_target}. name: {this.Name}");
+            if (_isDeleted)
+            {
+                Logger.WriteLine("Warning", $"Cannot set parameter of already deleted {_log_target}.");
+                return false;
             }
 
             bool isMemberOfAdministrators = this.IsMemberOf("Administrators");
@@ -328,6 +481,7 @@ namespace LocalAccountManager.LocalAccount
                         if (isChangeEntry) entry.CommitChanges();
                         if (isChangePrincipal) principal.Save();
                         Logger.WriteLine("Info", $"Successfully set parameter of {_log_target}.");
+                        return true;
                     }
                 }
                 catch (Exception e)
@@ -342,19 +496,21 @@ namespace LocalAccountManager.LocalAccount
                 Logger.WriteLine("Info", $"{_log_target} was member of Administrators group. Re-joining the group after modifying parameters.");
                 JoinGroup("Administrators");
             }
+            return false;
         }
+        */
 
         /// <summary>
         /// Rename local user name.
         /// </summary>
         /// <param name="newName"></param>
-        public void Rename(string newName)
+        public bool Rename(string newName)
         {
             Logger.WriteLine("Info", $"Renaming {_log_target}. old name: {this.Name}, new name: {newName}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot rename already deleted {_log_target}.");
-                return;
+                return false;
             }
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             using (var entry = directoryEntry.Children.Find(this.Name, "User"))
@@ -367,6 +523,7 @@ namespace LocalAccountManager.LocalAccount
                         entry.CommitChanges();
                         this.Name = newName;
                         Logger.WriteLine("Info", $"Successfully renamed {_log_target}.");
+                        return true;
                     }
                 }
                 catch (Exception e)
@@ -375,13 +532,14 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Create new local user.
         /// </summary>
         /// <param name="name"></param>
-        public static void New(string name)
+        public static bool New(string name)
         {
             Logger.WriteLine("Info", $"Creating new {_log_target}. name: {name}");
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
@@ -392,6 +550,7 @@ namespace LocalAccountManager.LocalAccount
                     {
                         directoryEntry.Children.Add(name, "User").CommitChanges();
                         Logger.WriteLine("Info", $"Successfully created new {_log_target}.");
+                        return true;
                     }
                 }
                 catch (Exception e)
@@ -400,27 +559,28 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Create new local user. (alias of New method)
         /// </summary>
         /// <param name="name"></param>
-        public static void Add(string name)
+        public static bool Add(string name)
         {
-            LocalUser.Add(name);
+            return LocalUser.Add(name);
         }
 
         /// <summary>
         /// Remove local user.
         /// </summary>
-        public void Remove()
+        public bool Remove()
         {
             Logger.WriteLine("Info", $"Deleting {_log_target}. name: {this.Name}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot delete already deleted {_log_target}.");
-                return;
+                return false;
             }
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             {
@@ -430,6 +590,7 @@ namespace LocalAccountManager.LocalAccount
                     directoryEntry.Children.Remove(entry);
                     _isDeleted = true;
                     Logger.WriteLine("Info", $"Successfully deleted {_log_target}.");
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -437,27 +598,28 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Remove local user. (alias of Remove method)
         /// </summary>
-        public void Delete()
+        public bool Delete()
         {
-            this.Remove();
+            return this.Remove();
         }
 
         /// <summary>
         /// Change local user password.
         /// </summary>
         /// <param name="newPassword"></param>
-        public void ChangePassword(string newPassword)
+        public bool ChangePassword(string newPassword)
         {
             Logger.WriteLine("Info", $"Changing password of {_log_target}. name: {this.Name}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot change password already deleted {_log_target}.");
-                return;
+                return false;
             }
             using (var directoryEntry = new DirectoryEntry($"WinNT://{Environment.MachineName},computer"))
             using (var entry = directoryEntry.Children.Find(this.Name, "User"))
@@ -467,6 +629,7 @@ namespace LocalAccountManager.LocalAccount
                     entry.Invoke("SetPassword", new object[] { newPassword });
                     entry.CommitChanges();
                     Logger.WriteLine("Info", $"Successfully changed password of {_log_target}.");
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -474,18 +637,19 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Unlock local user account.
         /// </summary>
-        public void UnlockAccount()
+        public bool UnlockAccount()
         {
             Logger.WriteLine("Info", $"Unlocking account of {_log_target}. name: {this.Name}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot unlock account of already deleted {_log_target}.");
-                return;
+                return false;
             }
             string name = this.Name;
             using (var context = new PrincipalContext(ContextType.Machine, Environment.MachineName))
@@ -499,6 +663,7 @@ namespace LocalAccountManager.LocalAccount
                         principal.Save();
                         this.AccountIsLockedOut = false;
                         Logger.WriteLine("Info", $"Successfully unlocked account of {_log_target}.");
+                        return true;
                     }
                 }
                 catch (Exception e)
@@ -507,24 +672,25 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Join local user to local group.
         /// </summary>
         /// <param name="groupName"></param>
-        public void JoinGroup(string groupName)
+        public bool JoinGroup(string groupName)
         {
             Logger.WriteLine("Info", $"Joining {_log_target} to group. user: {this.Name}, group: {groupName}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot join to group already deleted {_log_target}.");
-                return;
+                return false;
             }
             if (IsMemberOf(groupName))
             {
                 Logger.WriteLine("Info", $"{_log_target} is already a member of the group.");
-                return;
+                return true;
             }
 
             string name = this.Name;
@@ -540,6 +706,7 @@ namespace LocalAccountManager.LocalAccount
                     list.Add(groupName);
                     this.JoinedGroup = list.ToArray();
                     Logger.WriteLine("Info", $"Successfully joined {_log_target} to group.");
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -547,24 +714,25 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
 
         /// <summary>
         /// Leave local user from local group.
         /// </summary>
         /// <param name="groupName"></param>
-        public void LeaveGroup(string groupName)
+        public bool LeaveGroup(string groupName)
         {
             Logger.WriteLine("Info", $"Leaving {_log_target} from group. user: {this.Name}, group: {groupName}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot leave from group already deleted {_log_target}.");
-                return;
+                return false;
             }
             if (!IsMemberOf(groupName))
             {
                 Logger.WriteLine("Info", $"{_log_target} is not a member of the group.");
-                return;
+                return true;
             }
 
             string name = this.Name;
@@ -580,6 +748,7 @@ namespace LocalAccountManager.LocalAccount
                     list.RemoveAll(g => string.Equals(g, groupName, StringComparison.OrdinalIgnoreCase));
                     this.JoinedGroup = list.ToArray();
                     Logger.WriteLine("Info", $"Successfully leaved {_log_target} from group.");
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -587,6 +756,7 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.Message);
                 }
             }
+            return false;
         }
     }
 }
