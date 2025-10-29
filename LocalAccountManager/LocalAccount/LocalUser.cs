@@ -481,15 +481,15 @@ namespace LocalAccountManager.LocalAccount
         /// <param name="newPassword"></param>
         public bool ChangePassword(string newPassword)
         {
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                Logger.WriteLine("Warning", $"Cannot set empty password to {_log_target}.");
+                return false;
+            }
             Logger.WriteLine("Info", $"Changing password of {_log_target}. name: {this.Name}");
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot change password already deleted {_log_target}.");
-                return false;
-            }
-            if (string.IsNullOrEmpty(newPassword))
-            {
-                Logger.WriteLine("Warning", $"Cannot set empty password to {_log_target}.");
                 return false;
             }
 
