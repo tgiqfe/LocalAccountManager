@@ -524,13 +524,8 @@ namespace LocalAccountManager.LocalAccount
         /// <summary>
         /// Unlock local user account.
         /// </summary>
-        public bool UnlockAccount(bool? unlock)
+        public bool UnlockAccount()
         {
-            if (unlock == null)
-            {
-                Logger.WriteLine("Warning", $"Skip unlock account to {_log_target}.");
-                return false;
-            }
             if (_isDeleted)
             {
                 Logger.WriteLine("Warning", $"Cannot unlock account of already deleted {_log_target}.");
