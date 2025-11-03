@@ -229,8 +229,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -264,8 +264,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to rename {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to rename {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -291,8 +291,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to create new {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to create new {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -330,8 +330,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to delete {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to delete {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;

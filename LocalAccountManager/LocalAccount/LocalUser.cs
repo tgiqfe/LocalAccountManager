@@ -362,8 +362,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
 
                 if (isMemberOfAdministrators)
@@ -403,8 +403,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to rename {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to rename {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -430,8 +430,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to create new {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to create new {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -469,8 +469,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to delete {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to delete {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -514,8 +514,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to change password of {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to change password of {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -550,8 +550,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to unlock account of {_log_target}. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to unlock account of {_log_target}.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -592,8 +592,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to join {_log_target} to group. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to join {_log_target} to group.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
@@ -634,8 +634,8 @@ namespace LocalAccountManager.LocalAccount
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteLine("Error", $"Failed to leave {_log_target} from group. Exception: {e.ToString()}");
-                    Logger.WriteRaw(e.Message);
+                    Logger.WriteLine("Error", $"Failed to leave {_log_target} from group.");
+                    Logger.WriteRaw(e.ToString());
                 }
             }
             return false;
