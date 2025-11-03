@@ -1,4 +1,5 @@
-﻿using System.DirectoryServices;
+﻿using LocalAccountManager.Functions;
+using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.Management;
 
@@ -259,8 +260,10 @@ namespace LocalAccountManager.LocalAccount
             bool isMemberOfAdministrators = this.IsMemberOf("Administrators");
             if (isMemberOfAdministrators)
             {
-                Logger.WriteLine("Info", $"{_log_target} is member of Administrators group. Temporarily leaving the group to modify parameters.");
-                LeaveGroup("Administrators");
+                //Logger.WriteLine("Info", $"{_log_target} is member of Administrators group. Temporarily leaving the group to modify parameters.");
+                //LeaveGroup("Administrators");
+                Logger.WriteLine("Info", $"Adjusting SeMachineAccountPrivilege for modifying parameters of {_log_target}.");
+                ProcessPrivilege.AdjustToken(Privilege.SeMachineAccountPrivilege);
             }
 
             string name = this.Name;
@@ -366,11 +369,13 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteRaw(e.ToString());
                 }
 
+                /*
                 if (isMemberOfAdministrators)
                 {
                     Logger.WriteLine("Info", $"{_log_target} was member of Administrators group. Re-joining the group after modifying parameters.");
                     JoinGroup("Administrators");
                 }
+                */
                 return false;
             }
         }
