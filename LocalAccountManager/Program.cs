@@ -1,5 +1,22 @@
 ﻿
 using LocalAccountManager;
+using LocalAccountManager.LocalAccount;
+
+
+LocalAccountManager.LocalAccountManager.SetUser(
+    "Administrator",
+    null,
+    null,
+    false,
+    null,
+    true,
+    null,
+    null, null, null, null);
+
+
+Console.ReadLine();
+
+Environment.Exit(0);
 
 var ap = new ArgsParam(args);
 switch (ap.SubOption)

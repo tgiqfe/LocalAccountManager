@@ -8,10 +8,10 @@ namespace LocalAccountManager.LocalAccount
     {
         #region public parameter
 
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-        public string[] Members { get; private set; }
-        public string SID { get; private set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string[] Members { get; set; }
+        public string SID { get; set; }
 
         #endregion
 

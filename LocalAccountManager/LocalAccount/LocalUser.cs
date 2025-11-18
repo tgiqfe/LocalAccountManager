@@ -9,21 +9,21 @@ namespace LocalAccountManager.LocalAccount
     {
         #region public parameter
 
-        public string Name { get; private set; }
-        public string FullName { get; private set; }
+        public string Name { get; set; }
+        public string FullName { get; set; }
         public string Description { get; set; }
-        public bool UserMustChangePasswordAtNextLogon { get; private set; }
-        public bool UserCannotChangePassword { get; private set; }
-        public bool PasswordNeverExpires { get; private set; }
-        public bool AccountIsDisabled { get; private set; }
-        public bool AccountIsLockedOut { get; private set; }
-        public string[] JoinedGroup { get; private set; }
-        public string ProfilePath { get; private set; }
-        public string LogonScript { get; private set; }
-        public string HomeDirectory { get; private set; }
-        public string HomeDrive { get; private set; }
-        public string SID { get; private set; }
-        public DateTime LastLogonTime { get; private set; }
+        public bool UserMustChangePasswordAtNextLogon { get; set; }
+        public bool UserCannotChangePassword { get; set; }
+        public bool PasswordNeverExpires { get; set; }
+        public bool AccountIsDisabled { get; set; }
+        public bool AccountIsLockedOut { get; set; }
+        public string[] JoinedGroup { get; set; }
+        public string ProfilePath { get; set; }
+        public string LogonScript { get; set; }
+        public string HomeDirectory { get; set; }
+        public string HomeDrive { get; set; }
+        public string SID { get; set; }
+        public DateTime LastLogonTime { get; set; }
 
         #endregion
 
@@ -260,8 +260,6 @@ namespace LocalAccountManager.LocalAccount
             bool isMemberOfAdministrators = this.IsMemberOf("Administrators");
             if (isMemberOfAdministrators)
             {
-                //Logger.WriteLine("Info", $"{_log_target} is member of Administrators group. Temporarily leaving the group to modify parameters.");
-                //LeaveGroup("Administrators");
                 Logger.WriteLine("Info", $"Adjusting SeMachineAccountPrivilege for modifying parameters of {_log_target}.");
                 ProcessPrivilege.AdjustToken(Privilege.SeMachineAccountPrivilege);
             }
@@ -301,7 +299,7 @@ namespace LocalAccountManager.LocalAccount
                             userMustChangePasswordAtNextLogon.Value != this.UserMustChangePasswordAtNextLogon)
                         {
                             Logger.WriteLine("Info", $"Changing UserMustChangePasswordAtNextLogon to '{userMustChangePasswordAtNextLogon.Value}'.");
-                            entry.Properties["PasswordExpired"].Value = userMustChangePasswordAtNextLogon.Value ? "1" : "0";
+                            entry.Properties["PasswordExpired"].Value = userMustChangePasswordAtNextLogon.Value ? 1 : 0;
                             this.UserMustChangePasswordAtNextLogon = userMustChangePasswordAtNextLogon.Value;
                             isChangeEntry = true;
                         }
@@ -368,14 +366,6 @@ namespace LocalAccountManager.LocalAccount
                     Logger.WriteLine("Error", $"Failed to set parameter of {_log_target}.");
                     Logger.WriteRaw(e.ToString());
                 }
-
-                /*
-                if (isMemberOfAdministrators)
-                {
-                    Logger.WriteLine("Info", $"{_log_target} was member of Administrators group. Re-joining the group after modifying parameters.");
-                    JoinGroup("Administrators");
-                }
-                */
                 return false;
             }
         }
